@@ -11,6 +11,8 @@ from ctypes import *
 # For sleep()
 import time
 
+hexfile = "test1.a00"
+can_id = 200
 
 # -------------------------------------------------------------------------
 # dll initialization
@@ -51,7 +53,7 @@ if stat < 0: print "canBusOn channel 1 failed: ", stat
 msg = MsgDataType()
 
 #open hex2000 file
-f = open("test1.a00", "r")
+f = open(hexfile, "r")
 f.next()  
 for s in f:
     a = s.split()
@@ -63,7 +65,7 @@ for s in f:
             break
         msg[0] = int(i,16)
         msg[1] = int(a.pop(),16)
-        stat = canWrite(c_int(hnd1), c_int(100), pointer(msg), c_int(8), c_int(0))
+        stat = canWrite(c_int(hnd1), c_int(can_id), pointer(msg), c_int(2), c_int(0))
         if stat < 0:
             print "canWrite channel 1 failed: ", stat
         time.sleep(.001)
