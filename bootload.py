@@ -42,14 +42,10 @@ canInitializeLibrary()
 # ... and open channels 0 and 1. These are assumed to be on the same
 # terminated CAN bus.
 hnd1 = canOpenChannel(c_int(0), c_int(32))
-hnd2 = canOpenChannel(c_int(1), c_int(32))
 
 # Go bus on
 stat = canBusOn(c_int(hnd1))
 if stat < 0: print "canBusOn channel 1 failed: ", stat
-
-stat = canBusOn(c_int(hnd2))
-if stat < 0: print "canBusOn channel 2 failed: ", stat
 
 # Setup a message
 msg = MsgDataType()
@@ -61,48 +57,10 @@ stat = canWrite(c_int(hnd1), c_int(100), pointer(msg), c_int(8), c_int(0))
 if stat < 0:
   print "canWrite channel 1 failed: ", stat
 
-# Sleep for a second - this is just a demonstration script anyway :-)
-time.sleep(1)
-
-# Here are the variables to receive the message..
-rx_msg = MsgDataType()
-rx_id = c_int()
-rx_dlc = c_int()
-rx_flags = c_int()
-rx_time = c_int()
-
-# .. so receive it.
-stat = canRead(c_int(hnd2), pointer(rx_id), pointer(rx_msg), 
-  pointer(rx_dlc), pointer(rx_flags), pointer(rx_time))
-
-if stat < 0:
-  print "canRead channel 2 failed: ", stat
-
-# Print it, for the amusement of the crowd
-print "Rx id=", rx_id.value
-for i in rx_msg: print i,
-print "\nRx Len=", rx_dlc.value
-print "Rx Flags=", rx_flags.value
-print "Rx Time=", rx_time.value
-
-# Obtain the firmware revision for channel (not handle!) 0
-fw_rev = c_uint64()
-canGetChannelData(c_int(0), canCHANNELDATA_CARD_FIRMWARE_REV, pointer(fw_rev), 8)
-print "Firmware revision channel 0 = ", (fw_rev.value >> 48), ".", (fw_rev.value >> 32) & 0xFFFF, ".", (fw_rev.value) & 0xFFFF
-
-# Obtain device name for channel (not handle!) 0
-s = create_string_buffer(100)
-canGetChannelData(c_int(0), canCHANNELDATA_DEVDESCR_ASCII, pointer(s), 100)
-print "Device name: ", s.value
-
-canGetChannelData(c_int(1), canCHANNELDATA_DEVDESCR_ASCII, pointer(s), 100)
-print "Device name: ", s.value
 
 # Some cleanup, which would be done acutomatically when the DLL unloads.
 stat = canBusOff(c_int(hnd1))
-stat = canBusOff(c_int(hnd2))
 
 canClose(c_int(hnd1))
-canClose(c_int(hnd2))
 
 
