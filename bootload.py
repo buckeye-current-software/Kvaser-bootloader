@@ -49,15 +49,26 @@ if stat < 0: print "canBusOn channel 1 failed: ", stat
 
 # Setup a message
 msg = MsgDataType()
-msg[0] = 23
-msg[1] = 45
 
-# .. and send it, using identifier 100.
-stat = canWrite(c_int(hnd1), c_int(100), pointer(msg), c_int(8), c_int(0))
-if stat < 0:
-  print "canWrite channel 1 failed: ", stat
+#open hex2000 file
+f = open("test1.a00", "r")
+f.next()  
+for s in f:
+    a = s.split()
+    b = s.split()
+    a.reverse()
+    while(len(a) > 0):
+        i = a.pop()
+        if i == '\x03':
+            break
+        msg[0] = int(i,16)
+        msg[1] = int(a.pop(),16)
+        stat = canWrite(c_int(hnd1), c_int(100), pointer(msg), c_int(8), c_int(0))
+        if stat < 0:
+            print "canWrite channel 1 failed: ", stat
+        time.sleep(.001)
 
-
+print "done"
 # Some cleanup, which would be done acutomatically when the DLL unloads.
 stat = canBusOff(c_int(hnd1))
 
