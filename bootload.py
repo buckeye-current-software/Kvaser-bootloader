@@ -11,8 +11,8 @@ from ctypes import *
 # For sleep()
 import time
 
-hexfile = "test1.a00"
-can_id = 200
+hexfile = "Template.a00"
+can_id = 5
 
 # -------------------------------------------------------------------------
 # dll initialization
@@ -47,14 +47,19 @@ hnd1 = canOpenChannel(c_int(0), c_int(32))
 
 # Go bus on
 stat = canBusOn(c_int(hnd1))
-if stat < 0: print "canBusOn channel 1 failed: ", stat
+if stat < 0: 
+    print "canBusOn channel 1 failed: ", stat
+    assert(0)
 
 # Setup a message
 msg = MsgDataType()
 
 #open hex2000 file
 f = open(hexfile, "r")
-f.next()  
+w = open("write.txt", "w")
+f.next()
+
+time.sleep(1)
 for s in f:
     a = s.split()
     b = s.split()
@@ -63,13 +68,20 @@ for s in f:
         i = a.pop()
         if i == '\x03':
             break
+        j = a.pop()
         msg[0] = int(i,16)
-        msg[1] = int(a.pop(),16)
+        msg[1] = int(j,16)
+        #print "next: " +  " " + repr(int(i,16)) + ' ' + repr(int(j,16))
+        #raw_input("press")
         stat = canWrite(c_int(hnd1), c_int(can_id), pointer(msg), c_int(2), c_int(0))
         if stat < 0:
             print "canWrite channel 1 failed: ", stat
-        time.sleep(.001)
+            assert(0)
+        w.write(repr(int(i,16)) + " " + repr(int(j,16)) + '\n')
+        time.sleep(.01)
 
+w.flush()
+w.close()
 print "done"
 # Some cleanup, which would be done acutomatically when the DLL unloads.
 stat = canBusOff(c_int(hnd1))
